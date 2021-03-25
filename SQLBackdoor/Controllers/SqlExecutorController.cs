@@ -18,12 +18,20 @@ namespace SQLBackdoor.Controllers
         public async Task<IActionResult> Post([FromBody] QueryData model)
         {
 
-            var connectionString = $@"Data Source={model.Server};Initial Catalog={model.Database};User Id={model.Username};Password={model.Password};";
-
-            using (var connection = new SqlConnection(connectionString))
+            try
             {
-                var response = await connection.QueryAsync(model.Query);
-                return Ok(new { data = response });
+                var connectionString = $@"Data Source={model.Server};Initial Catalog={model.Database};User Id={model.Username};Password={model.Password};";
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    var response = await connection.QueryAsync(model.Query);
+                    return Ok(new { data = response });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex);
             }
         }
     }
