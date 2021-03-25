@@ -2,150 +2,175 @@
     ViewData["Title"] = "Home Page";
 }
 
-
-
-<form class="form-inline">
-    <div class="form-group mb-2">
-        <label for="server">Server</label>
-        <input type="text" class="form-control-plaintext" id="server">
-    </div>
-    <div class="form-group mb-2">
-        <label for="username">Username</label>
-        <input type="text" class="form-control-plaintext" id="username">
-    </div>
-    <div class="form-group mx-sm-3 mb-2">
-        <label for="password">Password</label>
-        <input type="password" class="form-control" id="password" placeholder="Password">
-    </div>
-    <div class="form-group mb-2">
-        <label for="database">Database</label>
-        <input type="text" class="form-control-plaintext" id="database">
-    </div>
-</form>
-
-<hr />
-<div class="editor-holder fullscreen">
-    <ul class="toolbar">
-        <li><a href="#" id="indent" title="Toggle tabs or spaces"><i class="fa fa-indent"></i></a></li>
-        <li><a href="#" id="fullscreen" title="Toggle fullscreen mode"><i class="fa fa-expand"></i></a></li>
-        <li><a href="#" id="btn-execute" title=""><i class="fa fa-play"></i></a></li>
-    </ul>
-    <div class="scroller">
-        <textarea class="editor allow-tabs"></textarea>
-        <pre><code class="syntax-highight sql"></code></pre>
-    </div>
-</div>
-
-
+ <div class="container">
+     <div class="row no-gutters">
+         <div class="col-12 col-md-3" id="sql-params-placement">
+             <form class="px-2">
+                 <div class="form-group mb-2">
+                     <label for="server">Server</label>
+                     <input type="text" class="form-control" id="server">
+                 </div>
+                 <div class="form-group mb-2">
+                     <label for="username">Username</label>
+                     <input type="text" class="form-control" id="username">
+                 </div>
+                 <div class="form-group mb-2">
+                     <label for="password">Password</label>
+                     <input type="password" class="form-control" id="password" placeholder="Password">
+                 </div>
+                 <div class="form-group mb-2">
+                     <label for="database">Database</label>
+                     <input type="text" class="form-control" id="database">
+                 </div>
+             </form>
+         </div>
+         <div class="col-12 col-md-9" id="sql-editor-placement">
+             <partial name="_SQLEditor" />
+         </div>         
+     </div>     
+ </div>
+ <div class="container-fluid bg-light text-dark">
+     <div id="data-result-placement">
+         <table>
+             <thead>
+                 <tr>
+                     <th></th>
+                 </tr>
+             </thead>
+             <tbody>
+                 <tr>
+                     <td></td>
+                 </tr>
+             </tbody>
+         </table>
+     </div>
+ </div>
 
 @section scripts{
     <script>
-        hljs.initHighlightingOnLoad();
+        var dtOpts = {
+            autoWidth: false,
+            ordering: false,
+            searching: false,
+            paging: false,
+            info: false
+        }
 
         var tabCharacter = "  ";
         var tabOffset = 2;
-        var table;
+        var table = $("#data-result-placement table").DataTable(dtOpts);
 
-        $(document).on('click', '#indent', function (e) {
-            e.preventDefault();
-            var self = $(this);
+        var urlSqlExecution = '@Url.Action("Post", "SqlExecutor")'
 
-            self.toggleClass('active');
+        $(document).ready(function () {
+            hljs.initHighlightingOnLoad();
+            hightlightSyntax();
 
-            if (self.hasClass('active')) {
-                tabCharacter = "\t";
-                tabOffset = 1;
-            }
-            else {
-                tabCharacter = "  ";
-                tabOffset = 2;
-            }
-        })
-
-        $(document).on('click', '#fullscreen', function (e) {
-            e.preventDefault();
-            var self = $(this);
-
-            self.toggleClass('active');
-            self.parents('.editor-holder').toggleClass('fullscreen');
-        });
-
-        $(document).on('click', '#btn-execute', function (e) {
-
-            var me = $('.editor');
-            var content = me.val();
-            var escaped = escapeHtml(content);
-
-            if (escaped == "" || escaped == undefined) {
-                alert("Erro de sintaxe!");
+            $(document).on('click', '#indent', function (e) {
                 e.preventDefault();
-                return;
-            }
+                var self = $(this);
 
-            var request = {
-                "Server": $("#server").val(),
-                "Username": $("#username").val(),
-                "Password": $("#password").val(),
-                "Database": $("#database").val(),
-                "Query": escaped
-            };
+                self.toggleClass('active');
 
-            $.post(
-                {
-                    url: "/ssms/api/SqlExecutor",
-                    contentType: "application/json",
-                    dataType: 'json',
-                    data: JSON.stringify(request),
-                    beforeSend: function () {
-                        if ($.fn.DataTable.isDataTable('.table-result')) {
-                            $('.table-result').DataTable().destroy(true);
+                if (self.hasClass('active')) {
+                    tabCharacter = "\t";
+                    tabOffset = 1;
+                }
+                else {
+                    tabCharacter = "  ";
+                    tabOffset = 2;
+                }
+            })
+
+            $(document).on('click', '#fullscreen', function (e) {
+                e.preventDefault();
+                var self = $(this);
+
+                self.toggleClass('active');
+                self.parents('.editor-holder').toggleClass('fullscreen');
+            });
+
+            $(document).on('click', '#btn-execute', function (e) {
+
+                var me = $('.editor');
+                var content = me.val();
+                var escaped = escapeHtml(content);
+
+                if (escaped == "" || escaped == undefined) {
+                    alert("Erro de sintaxe!");
+                    e.preventDefault();
+                    return;
+                }
+
+                var request = {
+                    "Server": $("#server").val(),
+                    "Username": $("#username").val(),
+                    "Password": $("#password").val(),
+                    "Database": $("#database").val(),
+                    "Query": escaped
+                };
+
+                $.post(
+                    {
+                        url: urlSqlExecution,
+                        contentType: "application/json",
+                        dataType: 'json',
+                        data: JSON.stringify(request),
+                        beforeSend: function () {
+                            if (table) {                                
+                                table.destroy();
+                                $("#data-result-placement table").empty()                                
+                            }
+                        },
+                        success: function (data) {
+                            myJsonData = data;
+                            populateDataTable(myJsonData);
+                        },
+                        error: function (e) {
+                            console.log("There was an error with your request...");
+                            console.log("error: " + JSON.stringify(e));
                         }
+                    });
 
-                        $('.table-result tbody').empty();
-                    },
-                    success: function (data) {
-                        myJsonData = data;
-                        populateDataTable(myJsonData);
-                    },
-                    error: function (e) {
-                        console.log("There was an error with your request...");
-                        console.log("error: " + JSON.stringify(e));
-                    }
-                });
+                e.preventDefault();
+            });
 
-            e.preventDefault();
-        });
-
-
-
-        /*------------------------------------------
-            Render existing code
-        ------------------------------------------*/
-        $(document).on('ready', function () {
-            hightlightSyntax();
-
-            //emmet.require('textarea').setup({
-            //    pretty_break: true,
-            //    use_tab: true
-            //});
-        });
-
-
-
-
-        /*------------------------------------------
+            /*------------Url-----------------------------
             Capture text updates
-        ------------------------------------------*/
-        $(document).on('ready load keyup keydown change', '.editor', function () {
-            correctTextareaHight(this);
-            hightlightSyntax();
-        });
+            ------------------------------------------*/
+            $(document).on('ready load keyup keydown change', '.editor', function () {
+                correctTextareaHeight(this);
+                hightlightSyntax();
+            });
 
+
+            /*------------------------------------------
+            Enable tabs in textarea
+            ------------------------------------------*/
+            $(document).delegate('.allow-tabs', 'keydown', function (e) {
+                var keyCode = e.keyCode || e.which;
+
+                if (keyCode == 9) {
+                    e.preventDefault();
+                    var start = $(this).get(0).selectionStart;
+                    var end = $(this).get(0).selectionEnd;
+
+                    // set textarea value to: text before caret + tab + text after caret
+                    $(this).val($(this).val().substring(0, start)
+                        + tabCharacter
+                        + $(this).val().substring(end));
+
+                    // put caret at right position again
+                    $(this).get(0).selectionStart =
+                        $(this).get(0).selectionEnd = start + tabOffset;
+                }
+            });
+        });
 
         /*------------------------------------------
             Resize textarea based on content
         ------------------------------------------*/
-        function correctTextareaHight(element) {
+        function correctTextareaHeight(element) {
             var self = $(element),
                 outerHeight = self.outerHeight(),
                 innerHeight = self.prop('scrollHeight'),
@@ -157,12 +182,7 @@
                 self.height(combinedScrollHeight);
             }
         }
-        // function correctTextareaHight(element){
-        // 	while($(element).outerHeight() < element.scrollHeight + parseFloat($(element).css("borderTopWidth")) + parseFloat($(element).css("borderBottomWidth"))) {
-        // 		$(element).height($(element).height()+1);
-        // 	};
-        // }
-
+        
 
         /*------------------------------------------
             Run syntax hightlighter
@@ -193,60 +213,26 @@
                 .replace(/'/g, "&#039;");
         }
 
-
-        /*------------------------------------------
-            Enable tabs in textarea
-        ------------------------------------------*/
-        $(document).delegate('.allow-tabs', 'keydown', function (e) {
-            var keyCode = e.keyCode || e.which;
-
-            if (keyCode == 9) {
-                e.preventDefault();
-                var start = $(this).get(0).selectionStart;
-                var end = $(this).get(0).selectionEnd;
-
-                // set textarea value to: text before caret + tab + text after caret
-                $(this).val($(this).val().substring(0, start)
-                    + tabCharacter
-                    + $(this).val().substring(end));
-
-                // put caret at right position again
-                $(this).get(0).selectionStart =
-                    $(this).get(0).selectionEnd = start + tabOffset;
-            }
-        });
-
-
-
         function populateDataTable(response) {
-
-            var elementTable = $("<table></table>");
-            elementTable.addClass("table-result");
-
-            $("body").append(elementTable);
-
-            console.log("populating data table...");
-            // clear the table before populating it with more data
-            debugger;
-
             var columns = [];
             var columnNames = Object.getOwnPropertyNames(response.data[0]);
 
             for (var i = 0; i < columnNames.length; i++) {
                 columns.push({
-                    "title": columnNames[i],
-                    "data": columnNames[i]
+                    title: columnNames[i],
+                    data: columnNames[i],
+                    render: function (data, type, row, meta) {
+                        return type === 'display' && data === null
+                            ? 'NULL'
+                            : data
+                    }
                 })
             }
 
-
-
-            table = elementTable.dataTable({
-                dom: "Bfrtip",
-                responsive: true,
-                data: response.data,
-                columns: columns
-            });
+            dtOpts.data = response.data
+            dtOpts.columns = columns;
+            table = $("#data-result-placement table").DataTable(dtOpts);
+            table.draw();
         }
     </script>
 }
