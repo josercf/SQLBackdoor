@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace SQLBackdoor.Controllers
 {
@@ -21,10 +22,11 @@ namespace SQLBackdoor.Controllers
             try
             {
                 var connectionString = $@"Data Source={model.Server};Initial Catalog={model.Database};User Id={model.Username};Password={model.Password};";
+                var query = model.Query.Replace("&#039;", "'");
 
                 using (var connection = new SqlConnection(connectionString))
                 {
-                    var response = await connection.QueryAsync(model.Query);
+                    var response = await connection.QueryAsync(query);
                     return Ok(new { data = response });
                 }
             }
