@@ -2,49 +2,53 @@
     ViewData["Title"] = "Home Page";
 }
 
- <div class="container">
-     <div class="row no-gutters">
-         <div class="col-12 col-md-3" id="sql-params-placement">
-             <form class="px-2">
-                 <div class="form-group mb-2">
-                     <label for="server">Server</label>
-                     <input type="text" class="form-control" id="server">
-                 </div>
-                 <div class="form-group mb-2">
-                     <label for="username">Username</label>
-                     <input type="text" class="form-control" id="username">
-                 </div>
-                 <div class="form-group mb-2">
-                     <label for="password">Password</label>
-                     <input type="password" class="form-control" id="password" placeholder="Password">
-                 </div>
-                 <div class="form-group mb-2">
-                     <label for="database">Database</label>
-                     <input type="text" class="form-control" id="database">
-                 </div>
-             </form>
-         </div>
-         <div class="col-12 col-md-9" id="sql-editor-placement">
-             <partial name="_SQLEditor" />
-         </div>         
-     </div>     
- </div>
- <div class="container-fluid bg-light text-dark">
-     <div id="data-result-placement">
-         <table>
-             <thead>
-                 <tr>
-                     <th></th>
-                 </tr>
-             </thead>
-             <tbody>
-                 <tr>
-                     <td></td>
-                 </tr>
-             </tbody>
-         </table>
-     </div>
- </div>
+<div class="container">
+    <div class="row no-gutters">
+        <div class="col-12 col-md-3" id="sql-params-placement">
+            <form class="px-2">
+                <div class="form-group mb-2">
+                    <label for="server">Connection Name</label>
+                    <input type="text" class="form-control" id="connectionName">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="server">Server</label>
+                    <input type="text" class="form-control" id="server">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Password">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="database">Database</label>
+                    <input type="text" class="form-control" id="database">
+                </div>
+            </form>
+        </div>
+        <div class="col-12 col-md-9" id="sql-editor-placement">
+            <partial name="_SQLEditor" />
+        </div>
+    </div>
+</div>
+<div class="container-fluid bg-light text-dark">
+    <div id="data-result-placement">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 @section scripts{
     <script>
@@ -66,6 +70,16 @@
             hljs.initHighlightingOnLoad();
             hightlightSyntax();
 
+            var connectionData = localStorage.getItem("lastConnection");
+            var connectionString = JSON.parse(connectionData);
+
+            if (connectionString != null) {
+                $("#server").val(connectionString.Server);
+                $("#username").val(connectionString.Username);
+                $("#password").val(connectionString.Password);
+                $("#database").val(connectionString.Database);
+            }
+         
             $(document).on('click', '#indent', function (e) {
                 e.preventDefault();
                 var self = $(this);
@@ -94,9 +108,8 @@
 
                 var me = $('.editor');
                 var content = me.val();
-                var escaped = escapeHtml(content);
 
-                if (escaped == "" || escaped == undefined) {
+                if (content == "" || content == undefined) {
                     alert("Erro de sintaxe!");
                     e.preventDefault();
                     return;
@@ -107,8 +120,11 @@
                     "Username": $("#username").val(),
                     "Password": $("#password").val(),
                     "Database": $("#database").val(),
-                    "Query": escaped
+                    "Query": content
                 };
+
+                localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
+                localStorage.setItem("lastConnection", JSON.stringify(request));
 
                 $.post(
                     {
@@ -117,9 +133,9 @@
                         dataType: 'json',
                         data: JSON.stringify(request),
                         beforeSend: function () {
-                            if (table) {                                
+                            if (table) {
                                 table.destroy();
-                                $("#data-result-placement table").empty()                                
+                                $("#data-result-placement table").empty()
                             }
                         },
                         success: function (data) {
@@ -129,6 +145,7 @@
                         error: function (e) {
                             console.log("There was an error with your request...");
                             console.log("error: " + JSON.stringify(e));
+                            alert("Err na consulta:" + JSON.stringify(e));
                         }
                     });
 
@@ -182,7 +199,7 @@
                 self.height(combinedScrollHeight);
             }
         }
-        
+
 
         /*------------------------------------------
             Run syntax hightlighter
@@ -214,6 +231,7 @@
         }
 
         function populateDataTable(response) {
+            debugger;
             var columns = [];
             var columnNames = Object.getOwnPropertyNames(response.data[0]);
 
