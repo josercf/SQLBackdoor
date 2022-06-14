@@ -22,6 +22,10 @@ namespace SQLBackdoor.Controllers
             try
             {
                 var connectionString = $@"Data Source={model.Server};Initial Catalog={model.Database};User Id={model.Username};Password={model.Password};";
+
+                if (!string.IsNullOrEmpty(model.Parameters))
+                    connectionString += $"{model.Parameters}";
+
                 var query = model.Query.Replace("&#039;", "'");
 
                 using (var connection = new SqlConnection(connectionString))
@@ -32,8 +36,7 @@ namespace SQLBackdoor.Controllers
             }
             catch (Exception ex)
             {
-
-                return BadRequest(ex);
+                return Problem(ex.Message);
             }
         }
     }
@@ -44,6 +47,8 @@ namespace SQLBackdoor.Controllers
         public string Username { get; set; }
         public string Password { get; set; }
         public string Database { get; set; }
+
+        public string Parameters { get; set; }
 
         public int Timeout { get; set; }
 
