@@ -30,9 +30,21 @@ namespace SQLBackdoor.Controllers
 
                 using (var connection = new SqlConnection(connectionString))
                 {
-                    var response = await connection.QueryAsync(query);
-                    return Ok(new { data = response });
+                    var ds = await connection.QueryAsync(query);
+
+                    var response = new
+                    {
+                        error = false,
+                        message = "",
+                        data = ds
+                    };
+
+                    return Ok(response);
                 }
+            }
+            catch (SqlException ex)
+            {
+                return Ok(new { error = true, message = ex.Message });
             }
             catch (Exception ex)
             {

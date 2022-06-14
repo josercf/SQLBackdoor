@@ -82,6 +82,7 @@
                 $("#username").val(connectionString.Username);
                 $("#password").val(connectionString.Password);
                 $("#database").val(connectionString.Database);
+                $("#parameters").val(connectionString.Parameters);
             }
          
             $(document).on('click', '#indent', function (e) {
@@ -138,18 +139,21 @@
                         dataType: 'json',
                         data: JSON.stringify(request),
                         beforeSend: function () {
-                            if (table) {
-                                table.destroy();
-                                $("#data-result-placement table").empty()
-                            }
+                            $("#data-result-placement").hide();
                         },
                         success: function (data) {
+                            console.log(data);
+                            if (data.error) {
+                                alert(data.message);
+                                return;
+                            }
+
                             populateDataTable(data);
                         },
-                        error: function (e) {
+                        error: function (e,x,h,t) {
                             console.log("There was an error with your request...");
                             console.log("error: " + JSON.stringify(e));
-                            alert("Err na consulta:" + JSON.stringify(e));
+                            alert("Erro não esperado");
                         }
                     });
 
@@ -235,7 +239,16 @@
         }
 
         function populateDataTable(response) {
-            debugger;
+            
+            if (response == null
+                || response == undefined
+                || response.data.length <= 0) return;
+
+            if (table) {
+                table.destroy();
+                $("#data-result-placement table").empty()
+            }
+
             var columns = [];
             var columnNames = Object.getOwnPropertyNames(response.data[0]);
 
@@ -255,6 +268,8 @@
             dtOpts.columns = columns;
             table = $("#data-result-placement table").DataTable(dtOpts);
             table.draw();
+
+            $("#data-result-placement").show();
         }
     </script>
 }
