@@ -30,7 +30,7 @@ namespace SQLBackdoor.Controllers
 
                 using (var connection = new SqlConnection(connectionString))
                 {
-                    var ds = await connection.QueryAsync(query);
+                    var ds = await connection.QueryAsync(query, commandTimeout: model.Timeout??120);
 
                     var response = new
                     {
@@ -59,11 +59,8 @@ namespace SQLBackdoor.Controllers
         public string Username { get; set; }
         public string Password { get; set; }
         public string Database { get; set; }
-
         public string Parameters { get; set; }
-
-        public int Timeout { get; set; }
-
-        public string Query { get; set; }
+        public int? Timeout { get; set; }
+        public string Query { get; set; }        
     }
 }
