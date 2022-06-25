@@ -1,71 +1,133 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    Layout = null;
 }
-
-<div class="container">
-    <div class="row no-gutters">
-        <div class="col-12 col-md-3" id="sql-params-placement">
-            <form class="px-2">
-                <div class="form-group mb-2">
-                    <label for="server">Connection Name</label>
-                    <input type="text" class="form-control" id="connectionName">
-                </div>
-                <div class="form-group mb-2">
-                    <label for="server">Server</label>
-                    <input type="text" class="form-control" id="server">
-                </div>
-                <div class="form-group mb-2">
-                    <label for="username">Username</label>
-                    <input type="text" class="form-control" id="username">
-                </div>
-                <div class="form-group mb-2">
-                    <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Password">
-                </div>
-                <div class="form-group mb-2">
-                    <label for="database">Database</label>
-                    <input type="text" class="form-control" id="database">
-                </div>
-                <div class="form-group mb-2">
-                    <label for="parameters">Timeout</label>
-                    <input type="text" class="form-control" id="timeout" placeholder="120">
-                </div>
-                <div class="form-group mb-2">
-                    <label for="parameters">Parameters</label>
-                    <input type="text" class="form-control" id="parameters">
-                </div>
-            </form>
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SQLBackdoor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/addon/hint/show-hint.min.css" integrity="sha512-OmcLQEy8iGiD7PSm85s06dnR7G7C9C0VqahIPAj/KHk5RpOCmnC6R2ob1oK4/uwYhWa9BF1GC6tzxsC8TIx7Jg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.18/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="/css/flash.css" />
+</head>
+<body class="h-100">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">SQLbackdoor</span>
         </div>
-        <div class="col-12 col-md-9" id="sql-editor-placement">
-            <partial name="_SQLEditor" />
+    </nav>
+    <div class="container-fluid h-100">
+        <div class="row no-gutters h-100">
+            <div class="col-12 col-sm-4 col-lg-3 col-xxl-2 h-100">
+                <div class="card p-0">
+                    <div class="card-header">Conexões</div>
+                    <div class="card-body">
+                        <form class="" id="form">
+                            @*<div class="form-group mb-2">
+                            <label for="server">Connection Name</label>
+                            <input type="text" class="form-control" id="connectionName">
+                            </div>*@
+                            <div class="form-group mb-2">
+                                <label for="server">Server</label>
+                                <input type="text" class="form-control" id="server">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="username">Username</label>
+                                <input type="text" class="form-control" id="username">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" placeholder="Password">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="database">Database</label>
+                                <input type="text" class="form-control" id="database">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="parameters">Timeout</label>
+                                <input type="text" class="form-control" id="timeout" placeholder="120">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="parameters">Parameters</label>
+                                <input type="text" class="form-control" id="parameters">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-8 col-lg-9 col-xxl-10">
+                <div class="row no-gutters">
+                    <div class="col-12">
+                        <div class="card p-0">
+                            <div class="card-header">SQL</div>
+                            <textarea id="code" class=""></textarea>
+                            <div class="card-footer">
+                                <button id="execute" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-play"></i> Executar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-1">
+                        <div class="card p-0">
+                            <div class="card-header">Resultados</div>
+                            <div id="data-result-placement" style="max-height: 450px" class="overflow-auto">
+                                <table class="table-sm table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<div class="container-fluid bg-light text-dark">
-    <div id="data-result-placement">
-        <table>
-            <thead>
-                <tr>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-@section scripts{
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/codemirror.min.js" integrity="sha512-n7rucz/qOiYAkYK1CVKuqygMAnohil8Rg6kKAv0IsF2xnHUhnVyD5K9GO25OUvc+WEVZVu+NIYLblIUpkBMNvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/addon/edit/matchbrackets.min.js" integrity="sha512-GSYCbN/le5gNmfAWVEjg1tKnOH7ilK6xCLgA7c48IReoIR2g2vldxTM6kZlN6o3VtWIe6fHu/qhwxIt11J8EBA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/addon/hint/show-hint.min.js" integrity="sha512-yhmeAerubMLaGAsyS7sE8Oqub6GeTkBDQpkXo2JKHgg7JOCudQvcbDQc5rPxdl7MqcDusTJzSy+ODlyzAwETfQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/mode/sql/sql.min.js" integrity="sha512-u8r8NUnG9B9L2dDmsfvs9ohQ0SO/Z7MB8bkdLxV7fE0Q8bOeP7/qft1D4KyE8HhVrpH3ihSrRoDiMbYR1VQBWQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/addon/hint/sql-hint.min.js" integrity="sha512-O7YCIZwiyJYc9d/iPOSgEzhhlonTMGcmM1HmgYFffj5cGwVu2PLSzTaLvD9HSk8rSSf9rIpdhJPk8Yhu6wJBtA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+    <script data-pace-options='{ }' src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.18/dist/sweetalert2.all.min.js"></script>
     <script>
+        var mime = 'text/x-mssql';
+
         var dtOpts = {
             autoWidth: false,
             ordering: false,
             searching: false,
             paging: false,
-            info: false
+            info: false,
+            dom: 'Bfrtip',
+            buttons: [
+                'excelHtml5',
+                'csvHtml5'
+            ]
         }
 
         var tabCharacter = "  ";
@@ -74,12 +136,30 @@
 
         var urlSqlExecution = '@Url.Action("Post", "SqlExecutor")'
 
-        $(document).ready(function () {
-            hljs.initHighlightingOnLoad();
-            hightlightSyntax();
+        $(document).ready(function() {
+            window.editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+                mode: mime,
+                indentWithTabs: true,
+                smartIndent: true,
+                lineNumbers: true,
+                matchBrackets: true,
+                autofocus: true,
+                extraKeys: { "Ctrl-Space": "autocomplete" },
+                hintOptions: {
+                    tables: {
+                        users: ["name", "score", "birthDate"],
+                        countries: ["name", "population", "size"]
+                    }
+                }
+            });
+
+            $("#data-result-placement").hide();
+
+            Pace.stop();
 
             var connectionData = localStorage.getItem("lastConnection");
             var connectionString = JSON.parse(connectionData);
+            var lastQuery = localStorage.getItem("lastQuery");
 
             if (connectionString != null) {
                 $("#server").val(connectionString.Server);
@@ -89,38 +169,24 @@
                 $("#parameters").val(connectionString.Parameters);
                 $("#timeout").val(connectionString.Timeout);
             }
-         
-            $(document).on('click', '#indent', function (e) {
-                e.preventDefault();
-                var self = $(this);
 
-                self.toggleClass('active');
+            if (lastQuery != null) {
+                window.editor.setValue(lastQuery);
+            }
 
-                if (self.hasClass('active')) {
-                    tabCharacter = "\t";
-                    tabOffset = 1;
+            $(document).on('click', '#execute', function(e) {
+
+                var me = window.editor;
+                var fullContent = me.getValue();
+                var content = me.getSelection();
+
+                console.log(content);
+
+                if (content == "" || content == undefined) { 
+                    content = fullContent
                 }
-                else {
-                    tabCharacter = "  ";
-                    tabOffset = 2;
-                }
-            })
 
-            $(document).on('click', '#fullscreen', function (e) {
-                e.preventDefault();
-                var self = $(this);
-
-                self.toggleClass('active');
-                self.parents('.editor-holder').toggleClass('fullscreen');
-            });
-
-            $(document).on('click', '#btn-execute', function (e) {
-
-                var me = $('.editor');
-                var content = me.val();
-
-                if (content == "" || content == undefined) {
-                    alert("Erro de sintaxe!");
+                if (content == "" || content == undefined) {                    
                     e.preventDefault();
                     return;
                 }
@@ -131,12 +197,14 @@
                     "Password": $("#password").val(),
                     "Database": $("#database").val(),
                     "Parameters": $("#parameters").val(),
-                    "Timeout": $("#timeout").val(),
+                    "Timeout": $("#timeout").val() == '' ? null : $("#timeout").val(),
                     "Query": content
                 };
 
                 localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
                 localStorage.setItem("lastConnection", JSON.stringify(request));
+                localStorage.setItem("lastQuery", fullContent);
+
 
                 $.post(
                     {
@@ -144,108 +212,44 @@
                         contentType: "application/json",
                         dataType: 'json',
                         data: JSON.stringify(request),
-                        beforeSend: function () {
+                        beforeSend: function() {
                             $("#data-result-placement").hide();
-                        },
-                        success: function (data) {
-                            console.log(data);
-                            if (data.error) {
-                                alert(data.message);
-                                return;
-                            }
-
-                            populateDataTable(data);
-                        },
-                        error: function (e,x,h,t) {
-                            console.log("There was an error with your request...");
-                            console.log("error: " + JSON.stringify(e));
-                            alert("Erro não esperado");
+                            $("#execute").attr('disabled', 'disabled');
                         }
-                    });
+                    })
+                    .done(function(data) {
+                        console.log(data);
+                        if (data.error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: data.message
+                            });
+                            return;
+                        }
+
+                        populateDataTable(data);
+                    })
+                    .fail(function(e, x, h, t) {
+                        console.log("There was an error with your request...");
+                        console.log("error: " + JSON.stringify(e));
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Ocorreu um erro não esperado'
+                        });
+                    })
+                    .always(function() {
+                        $("#execute").removeAttr('disabled');
+                    })
+
 
                 e.preventDefault();
             });
-
-            /*------------Url-----------------------------
-            Capture text updates
-            ------------------------------------------*/
-            $(document).on('ready load keyup keydown change', '.editor', function () {
-                correctTextareaHeight(this);
-                hightlightSyntax();
-            });
-
-
-            /*------------------------------------------
-            Enable tabs in textarea
-            ------------------------------------------*/
-            $(document).delegate('.allow-tabs', 'keydown', function (e) {
-                var keyCode = e.keyCode || e.which;
-
-                if (keyCode == 9) {
-                    e.preventDefault();
-                    var start = $(this).get(0).selectionStart;
-                    var end = $(this).get(0).selectionEnd;
-
-                    // set textarea value to: text before caret + tab + text after caret
-                    $(this).val($(this).val().substring(0, start)
-                        + tabCharacter
-                        + $(this).val().substring(end));
-
-                    // put caret at right position again
-                    $(this).get(0).selectionStart =
-                        $(this).get(0).selectionEnd = start + tabOffset;
-                }
-            });
         });
 
-        /*------------------------------------------
-            Resize textarea based on content
-        ------------------------------------------*/
-        function correctTextareaHeight(element) {
-            var self = $(element),
-                outerHeight = self.outerHeight(),
-                innerHeight = self.prop('scrollHeight'),
-                borderTop = parseFloat(self.css("borderTopWidth")),
-                borderBottom = parseFloat(self.css("borderBottomWidth")),
-                combinedScrollHeight = innerHeight + borderTop + borderBottom;
-
-            if (outerHeight < combinedScrollHeight) {
-                self.height(combinedScrollHeight);
-            }
-        }
-
-
-        /*------------------------------------------
-            Run syntax hightlighter
-        ------------------------------------------*/
-        function hightlightSyntax() {
-            var me = $('.editor');
-            var content = me.val();
-            var codeHolder = $('code');
-            var escaped = escapeHtml(content);
-
-            codeHolder.html(escaped);
-
-            $('.syntax-highight').each(function (i, block) {
-                hljs.highlightBlock(block);
-            });
-        }
-
-
-        /*------------------------------------------
-            String html characters
-        ------------------------------------------*/
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
         function populateDataTable(response) {
-            
+
             if (response == null
                 || response == undefined
                 || response.data.length <= 0) return;
@@ -262,7 +266,7 @@
                 columns.push({
                     title: columnNames[i],
                     data: columnNames[i],
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         return type === 'display' && data === null
                             ? 'NULL'
                             : data
@@ -278,4 +282,5 @@
             $("#data-result-placement").show();
         }
     </script>
-}
+</body>
+</html>

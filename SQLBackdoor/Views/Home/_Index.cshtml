@@ -1,0 +1,281 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container">
+    <div class="row no-gutters">
+        <div class="col-12 col-md-3" id="sql-params-placement">
+            <form class="px-2">
+                <div class="form-group mb-2">
+                    <label for="server">Connection Name</label>
+                    <input type="text" class="form-control" id="connectionName">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="server">Server</label>
+                    <input type="text" class="form-control" id="server">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Password">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="database">Database</label>
+                    <input type="text" class="form-control" id="database">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="parameters">Timeout</label>
+                    <input type="text" class="form-control" id="timeout" placeholder="120">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="parameters">Parameters</label>
+                    <input type="text" class="form-control" id="parameters">
+                </div>
+            </form>
+        </div>
+        <div class="col-12 col-md-9" id="sql-editor-placement">
+            <partial name="_SQLEditor" />
+        </div>
+    </div>
+</div>
+<div class="container-fluid bg-light text-dark">
+    <div id="data-result-placement">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        var dtOpts = {
+            autoWidth: false,
+            ordering: false,
+            searching: false,
+            paging: false,
+            info: false
+        }
+
+        var tabCharacter = "  ";
+        var tabOffset = 2;
+        var table = $("#data-result-placement table").DataTable(dtOpts);
+
+        var urlSqlExecution = '@Url.Action("Post", "SqlExecutor")'
+
+        $(document).ready(function () {
+            hljs.initHighlightingOnLoad();
+            hightlightSyntax();
+
+            var connectionData = localStorage.getItem("lastConnection");
+            var connectionString = JSON.parse(connectionData);
+
+            if (connectionString != null) {
+                $("#server").val(connectionString.Server);
+                $("#username").val(connectionString.Username);
+                $("#password").val(connectionString.Password);
+                $("#database").val(connectionString.Database);
+                $("#parameters").val(connectionString.Parameters);
+                $("#timeout").val(connectionString.Timeout);
+            }
+         
+            $(document).on('click', '#indent', function (e) {
+                e.preventDefault();
+                var self = $(this);
+
+                self.toggleClass('active');
+
+                if (self.hasClass('active')) {
+                    tabCharacter = "\t";
+                    tabOffset = 1;
+                }
+                else {
+                    tabCharacter = "  ";
+                    tabOffset = 2;
+                }
+            })
+
+            $(document).on('click', '#fullscreen', function (e) {
+                e.preventDefault();
+                var self = $(this);
+
+                self.toggleClass('active');
+                self.parents('.editor-holder').toggleClass('fullscreen');
+            });
+
+            $(document).on('click', '#btn-execute', function (e) {
+
+                var me = $('.editor');
+                var content = me.val();
+
+                if (content == "" || content == undefined) {
+                    alert("Erro de sintaxe!");
+                    e.preventDefault();
+                    return;
+                }
+
+                var request = {
+                    "Server": $("#server").val(),
+                    "Username": $("#username").val(),
+                    "Password": $("#password").val(),
+                    "Database": $("#database").val(),
+                    "Parameters": $("#parameters").val(),
+                    "Timeout": $("#timeout").val(),
+                    "Query": content
+                };
+
+                localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
+                localStorage.setItem("lastConnection", JSON.stringify(request));
+
+                $.post(
+                    {
+                        url: urlSqlExecution,
+                        contentType: "application/json",
+                        dataType: 'json',
+                        data: JSON.stringify(request),
+                        beforeSend: function () {
+                            $("#data-result-placement").hide();
+                        },
+                        success: function (data) {
+                            console.log(data);
+                            if (data.error) {
+                                alert(data.message);
+                                return;
+                            }
+
+                            populateDataTable(data);
+                        },
+                        error: function (e,x,h,t) {
+                            console.log("There was an error with your request...");
+                            console.log("error: " + JSON.stringify(e));
+                            alert("Erro não esperado");
+                        }
+                    });
+
+                e.preventDefault();
+            });
+
+            /*------------Url-----------------------------
+            Capture text updates
+            ------------------------------------------*/
+            $(document).on('ready load keyup keydown change', '.editor', function () {
+                correctTextareaHeight(this);
+                hightlightSyntax();
+            });
+
+
+            /*------------------------------------------
+            Enable tabs in textarea
+            ------------------------------------------*/
+            $(document).delegate('.allow-tabs', 'keydown', function (e) {
+                var keyCode = e.keyCode || e.which;
+
+                if (keyCode == 9) {
+                    e.preventDefault();
+                    var start = $(this).get(0).selectionStart;
+                    var end = $(this).get(0).selectionEnd;
+
+                    // set textarea value to: text before caret + tab + text after caret
+                    $(this).val($(this).val().substring(0, start)
+                        + tabCharacter
+                        + $(this).val().substring(end));
+
+                    // put caret at right position again
+                    $(this).get(0).selectionStart =
+                        $(this).get(0).selectionEnd = start + tabOffset;
+                }
+            });
+        });
+
+        /*------------------------------------------
+            Resize textarea based on content
+        ------------------------------------------*/
+        function correctTextareaHeight(element) {
+            var self = $(element),
+                outerHeight = self.outerHeight(),
+                innerHeight = self.prop('scrollHeight'),
+                borderTop = parseFloat(self.css("borderTopWidth")),
+                borderBottom = parseFloat(self.css("borderBottomWidth")),
+                combinedScrollHeight = innerHeight + borderTop + borderBottom;
+
+            if (outerHeight < combinedScrollHeight) {
+                self.height(combinedScrollHeight);
+            }
+        }
+
+
+        /*------------------------------------------
+            Run syntax hightlighter
+        ------------------------------------------*/
+        function hightlightSyntax() {
+            var me = $('.editor');
+            var content = me.val();
+            var codeHolder = $('code');
+            var escaped = escapeHtml(content);
+
+            codeHolder.html(escaped);
+
+            $('.syntax-highight').each(function (i, block) {
+                hljs.highlightBlock(block);
+            });
+        }
+
+
+        /*------------------------------------------
+            String html characters
+        ------------------------------------------*/
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function populateDataTable(response) {
+            
+            if (response == null
+                || response == undefined
+                || response.data.length <= 0) return;
+
+            if (table) {
+                table.destroy();
+                $("#data-result-placement table").empty()
+            }
+
+            var columns = [];
+            var columnNames = Object.getOwnPropertyNames(response.data[0]);
+
+            for (var i = 0; i < columnNames.length; i++) {
+                columns.push({
+                    title: columnNames[i],
+                    data: columnNames[i],
+                    render: function (data, type, row, meta) {
+                        return type === 'display' && data === null
+                            ? 'NULL'
+                            : data
+                    }
+                })
+            }
+
+            dtOpts.data = response.data
+            dtOpts.columns = columns;
+            table = $("#data-result-placement table").DataTable(dtOpts);
+            table.draw();
+
+            $("#data-result-placement").show();
+        }
+    </script>
+}

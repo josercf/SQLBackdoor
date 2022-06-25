@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "install",
+			"path": "sqlbackdoorvscode/",
+			"problemMatcher": [],
+			"label": "npm: install - sqlbackdoorvscode",
+			"detail": "install dependencies from package"
+		}
+	]
+}
