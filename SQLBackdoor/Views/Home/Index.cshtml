@@ -30,35 +30,43 @@
                     <div class="card-header">Conexões</div>
                     <div class="card-body">
                         <form class="" id="form">
-                            @*<div class="form-group mb-2">
-                            <label for="server">Connection Name</label>
-                            <input type="text" class="form-control" id="connectionName">
-                            </div>*@
+                            <div class="form-group mb-2">
+                                <select class="form-select" aria-label="Selecione" id="connections"></select>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="server">Connection Name</label>
+                                <input type="text" class="form-control" id="name"  autocomplete="off">
+                            </div>
                             <div class="form-group mb-2">
                                 <label for="server">Server</label>
-                                <input type="text" class="form-control" id="server">
+                                <input type="text" class="form-control" id="server" autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="username">Username</label>
-                                <input type="text" class="form-control" id="username">
+                                <input type="text" class="form-control" id="dbUser"  autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="password">Password</label>
-                                <input type="password" class="form-control" id="password" placeholder="Password">
+                                <input type="password" class="form-control" id="dbPass" placeholder="Password"  autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="database">Database</label>
-                                <input type="text" class="form-control" id="database">
+                                <input type="text" class="form-control" id="database"  autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="parameters">Timeout</label>
-                                <input type="text" class="form-control" id="timeout" placeholder="120">
+                                <input type="text" class="form-control" id="timeout" placeholder="120"  autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="parameters">Parameters</label>
-                                <input type="text" class="form-control" id="parameters">
+                                <input type="text" class="form-control" id="parameters"  autocomplete="off">
                             </div>
                         </form>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-sm btn-success" id="save-conn">
+                            <i class="bi bi-check"></i> Salvar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -72,27 +80,18 @@
                                 <button id="execute" class="btn btn-primary btn-sm">
                                     <i class="bi bi-play"></i> Executar
                                 </button>
+                                <button id="stop" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-stop-fill"></i> Parar
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 mt-1">
-                        <div class="card p-0">
-                            <div class="card-header">Resultados</div>
-                            <div id="data-result-placement" style="max-height: 450px" class="overflow-auto">
-                                <table class="table-sm table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div class="col-12 mt-1" id="data-result-placement">
+                        @*<div class="card p-0">
+                        <div class="card-header">Resultados</div>
+                        <div id="" style="max-height: 450px" class="overflow-auto">
                         </div>
+                        </div>*@
                     </div>
                 </div>
             </div>
@@ -104,7 +103,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/addon/hint/show-hint.min.js" integrity="sha512-yhmeAerubMLaGAsyS7sE8Oqub6GeTkBDQpkXo2JKHgg7JOCudQvcbDQc5rPxdl7MqcDusTJzSy+ODlyzAwETfQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/mode/sql/sql.min.js" integrity="sha512-u8r8NUnG9B9L2dDmsfvs9ohQ0SO/Z7MB8bkdLxV7fE0Q8bOeP7/qft1D4KyE8HhVrpH3ihSrRoDiMbYR1VQBWQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.6/addon/hint/sql-hint.min.js" integrity="sha512-O7YCIZwiyJYc9d/iPOSgEzhhlonTMGcmM1HmgYFffj5cGwVu2PLSzTaLvD9HSk8rSSf9rIpdhJPk8Yhu6wJBtA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
@@ -117,22 +116,8 @@
     <script>
         var mime = 'text/x-mssql';
 
-        var dtOpts = {
-            autoWidth: false,
-            ordering: false,
-            searching: false,
-            paging: false,
-            info: false,
-            dom: 'Bfrtip',
-            buttons: [
-                'excelHtml5',
-                'csvHtml5'
-            ]
-        }
-
         var tabCharacter = "  ";
         var tabOffset = 2;
-        var table = $("#data-result-placement table").DataTable(dtOpts);
 
         var urlSqlExecution = '@Url.Action("Post", "SqlExecutor")'
 
@@ -157,68 +142,81 @@
 
             Pace.stop();
 
-            var connectionData = localStorage.getItem("lastConnection");
-            var connectionString = JSON.parse(connectionData);
+            populateCombo();
+            
             var lastQuery = localStorage.getItem("lastQuery");
-
-            if (connectionString != null) {
-                $("#server").val(connectionString.Server);
-                $("#username").val(connectionString.Username);
-                $("#password").val(connectionString.Password);
-                $("#database").val(connectionString.Database);
-                $("#parameters").val(connectionString.Parameters);
-                $("#timeout").val(connectionString.Timeout);
-            }
-
             if (lastQuery != null) {
                 window.editor.setValue(lastQuery);
             }
 
-            $(document).on('click', '#execute', function(e) {
+            $("#save-conn").on("click", function() {
+                var name = $("#name").val();
+                var conn = {
+                    "Server": $("#server").val(),
+                    "Username": $("#dbUser").val(),
+                    "Password": $("#dbPass").val(),
+                    "Database": $("#database").val(),
+                    "Parameters": $("#parameters").val(),
+                    "Timeout": $("#timeout").val() == '' ? null : $("#timeout").val()
+                };
+                localStorage.setItem('connection_' + name, JSON.stringify(conn));
+                populateCombo();
+            });
 
+            $("#connections").on('change', function(e) {
+                var conn = $(this).val();
+                var connectionData = localStorage.getItem(conn);
+                var connectionString = JSON.parse(connectionData);
+                populateInputs(connectionString);
+                $("#name").val(conn.substring(11));
+            });
+
+            var requestHandler;
+            $(document).on('click', '#execute', function(e) {
                 var me = window.editor;
                 var fullContent = me.getValue();
                 var content = me.getSelection();
 
                 console.log(content);
 
-                if (content == "" || content == undefined) { 
+                if (content == "" || content == undefined) {
                     content = fullContent
                 }
 
-                if (content == "" || content == undefined) {                    
+                if (content == "" || content == undefined) {
                     e.preventDefault();
                     return;
                 }
 
                 var request = {
                     "Server": $("#server").val(),
-                    "Username": $("#username").val(),
-                    "Password": $("#password").val(),
+                    "Username": $("#dbUser").val(),
+                    "Password": $("#dbPass").val(),
                     "Database": $("#database").val(),
                     "Parameters": $("#parameters").val(),
                     "Timeout": $("#timeout").val() == '' ? null : $("#timeout").val(),
                     "Query": content
                 };
 
-                localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
+                //localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
                 localStorage.setItem("lastConnection", JSON.stringify(request));
                 localStorage.setItem("lastQuery", fullContent);
 
-
-                $.post(
+                requestHandler = $.ajax(
                     {
                         url: urlSqlExecution,
                         contentType: "application/json",
                         dataType: 'json',
+                        method: 'POST',
                         data: JSON.stringify(request),
                         beforeSend: function() {
-                            $("#data-result-placement").hide();
+                            $("#data-result-placement").hide()
+                                .html('');
                             $("#execute").attr('disabled', 'disabled');
+                            $("#stop").removeAttr('disabled');
                         }
                     })
                     .done(function(data) {
-                        console.log(data);
                         if (data.error) {
                             Swal.fire({
                                 icon: 'error',
@@ -233,53 +231,123 @@
                     .fail(function(e, x, h, t) {
                         console.log("There was an error with your request...");
                         console.log("error: " + JSON.stringify(e));
+
+                        var text = 'Ocorreu um erro não esperado'
+                        if (e.status == 0)
+                            text = 'Requisição cancelada'
+
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            text: 'Ocorreu um erro não esperado'
+                            text: text
                         });
                     })
                     .always(function() {
                         $("#execute").removeAttr('disabled');
+                        $("#stop").attr('disabled', 'disabled');
                     })
+
 
 
                 e.preventDefault();
             });
+
+            $("#stop").attr('disabled', 'disabled')
+                .on('click', function() {
+                    requestHandler.abort();
+                });
         });
 
+        function populateCombo() {
+            var conns = [];
+            for (var i = 0, len = localStorage.length; i < len; ++i) {
+                conns.push(localStorage.key(i));
+            }
+
+            var conns = conns.filter(c => c.includes('connection_'));
+            console.log(conns);
+
+            var select = $("#connections");
+            select.html('<option selected>Selecione...</option>');
+
+            $.each(conns, function(i, conn) {
+                var name = conn.substring(11);
+                select.append(`<option value="${conn}">${name}</option>`)
+            });
+        }
+
+        function populateInputs(connectionString) {
+            $("#server").val(connectionString.Server);
+            $("#dbUser").val(connectionString.Username);
+            $("#dbPass").val(connectionString.Password);
+            $("#database").val(connectionString.Database);
+            $("#parameters").val(connectionString.Parameters);
+            $("#timeout").val(connectionString.Timeout);
+        }
+
         function populateDataTable(response) {
+            $("#data-result-placement").show();
 
             if (response == null
                 || response == undefined
-                || response.data.length <= 0) return;
+                || response.results.length <= 0) {
+                $("#data-result-placement").html('<p class="text-center">Sem resultados</p>');
+                return;
+            };
 
-            if (table) {
-                table.destroy();
-                $("#data-result-placement table").empty()
-            }
+            $.each(response.results, function(i, data) {
 
-            var columns = [];
-            var columnNames = Object.getOwnPropertyNames(response.data[0]);
 
-            for (var i = 0; i < columnNames.length; i++) {
-                columns.push({
-                    title: columnNames[i],
-                    data: columnNames[i],
-                    render: function(data, type, row, meta) {
-                        return type === 'display' && data === null
-                            ? 'NULL'
-                            : data
-                    }
-                })
-            }
+                var card = $(`<div id="result-${i}"></div>`);
+                card.addClass("card p-0");
+                card.append('<div class="card-header">Resultados</div>')
+                    .appendTo("#data-result-placement");
 
-            dtOpts.data = response.data
-            dtOpts.columns = columns;
-            table = $("#data-result-placement table").DataTable(dtOpts);
-            table.draw();
+                var container = $("<div style='max-height: 450px'></div>");
+                container.addClass('overflow-auto')
+                    .appendTo(card);
 
-            $("#data-result-placement").show();
+                if (data.count <= 0) {
+                    $('<p class="text-center">Sem resultados</p>').appendTo(container);
+                    return;
+                }
+
+                var htmlTable = $("<table></table>");
+                htmlTable.addClass('table table-sm table-striped table-hover')
+                    .appendTo(container);
+
+                var columns = [];
+
+                $.each(data.columns, function(c, column) {
+                    columns.push({
+                        title: column.label,
+                        data: column.name,
+                        render: function(data, type, row, meta) {
+                            return type === 'display' && data === null
+                                ? 'NULL'
+                                : data
+                        }
+                    })
+                });
+
+                var opts = {
+                    autoWidth: false,
+                    ordering: false,
+                    searching: false,
+                    paging: false,
+                    info: false,
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'excelHtml5',
+                        'csvHtml5'
+                    ]
+                };
+
+                opts.columns = columns;
+                opts.data = data.data;
+                var resultTable = htmlTable.DataTable(opts);
+                resultTable.draw();
+            });
         }
     </script>
 </body>
