@@ -208,12 +208,13 @@
                     "Password": $("#dbPass").val(),
                     "Database": $("#database").val(),
                     "Parameters": $("#parameters").val(),
-                    "Timeout": $("#timeout").val() == '' ? null : $("#timeout").val(),
-                    "Query": content
+                    "Timeout": $("#timeout").val() == '' ? null : $("#timeout").val(),                    
                 };
 
                 //localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
                 localStorage.setItem("lastConnection", JSON.stringify(request));
+
+                request.Query = content
 
                 if ($("#savequery").is(":checked")) {
                     localStorage.setItem("lastQuery", fullContent);
