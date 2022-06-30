@@ -35,7 +35,7 @@
                             </div>
                             <div class="form-group mb-2">
                                 <label for="server">Connection Name</label>
-                                <input type="text" class="form-control" id="name"  autocomplete="off">
+                                <input type="text" class="form-control" id="name" autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="server">Server</label>
@@ -43,23 +43,23 @@
                             </div>
                             <div class="form-group mb-2">
                                 <label for="username">Username</label>
-                                <input type="text" class="form-control" id="dbUser"  autocomplete="off">
+                                <input type="text" class="form-control" id="dbUser" autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="password">Password</label>
-                                <input type="password" class="form-control" id="dbPass" placeholder="Password"  autocomplete="off">
+                                <input type="password" class="form-control" id="dbPass" placeholder="Password" autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="database">Database</label>
-                                <input type="text" class="form-control" id="database"  autocomplete="off">
+                                <input type="text" class="form-control" id="database" autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="parameters">Timeout</label>
-                                <input type="text" class="form-control" id="timeout" placeholder="120"  autocomplete="off">
+                                <input type="text" class="form-control" id="timeout" placeholder="120" autocomplete="off">
                             </div>
                             <div class="form-group mb-2">
                                 <label for="parameters">Parameters</label>
-                                <input type="text" class="form-control" id="parameters"  autocomplete="off">
+                                <input type="text" class="form-control" id="parameters" autocomplete="off">
                             </div>
                         </form>
                     </div>
@@ -74,7 +74,15 @@
                 <div class="row no-gutters">
                     <div class="col-12">
                         <div class="card p-0">
-                            <div class="card-header">SQL</div>
+                            <div class="card-header">
+                                SQL
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="savequery" checked>
+                                    <label class="form-check-label" for="savequery">
+                                        Salvar query
+                                    </label>
+                                </div>
+                            </div>
                             <textarea id="code" class=""></textarea>
                             <div class="card-footer">
                                 <button id="execute" class="btn btn-primary btn-sm">
@@ -143,7 +151,7 @@
             Pace.stop();
 
             populateCombo();
-            
+
             var lastQuery = localStorage.getItem("lastQuery");
             if (lastQuery != null) {
                 window.editor.setValue(lastQuery);
@@ -188,6 +196,12 @@
                     return;
                 }
 
+                if (!$("#savequery").is(":checked")) 
+                {
+                    console.log('passou');
+                    fullContent = ''
+                }
+
                 var request = {
                     "Server": $("#server").val(),
                     "Username": $("#dbUser").val(),
@@ -200,7 +214,11 @@
 
                 //localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
                 localStorage.setItem("lastConnection", JSON.stringify(request));
-                localStorage.setItem("lastQuery", fullContent);
+
+                if ($("#savequery").is(":checked")) {
+                    localStorage.setItem("lastQuery", fullContent);
+                }
+                
 
                 requestHandler = $.ajax(
                     {
