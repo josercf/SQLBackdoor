@@ -24,6 +24,11 @@ namespace SQLBackdoor.Models
         public IEnumerable<dynamic> Data { get; set; }
 
         public long Count => Data.Count();
+
+        public ExecutionResponseResult()
+        {
+            Columns = new List<ExecutionResponseResultColumn>();
+        }
     }
 
     public class ExecutionResponseResultColumn

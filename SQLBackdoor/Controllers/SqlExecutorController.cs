@@ -1,5 +1,6 @@
 ﻿using Dapper;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using SQLBackdoor.Models;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data.SqlClient;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,12 +21,20 @@ namespace SQLBackdoor.Controllers
     public class SqlExecutorController : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] QueryData model)
+        public async Task<IActionResult> Post([FromForm] QueryData model)
         {
 
             try
             {
                 var connectionString = $@"Data Source={model.Server};Initial Catalog={model.Database};User Id={model.Username};Password={model.Password};";
+
+                if(model.File != null)
+                {
+                    using(var ms = new StreamReader(model.File.OpenReadStream()))
+                    {
+                        model.Query = ms.ReadToEnd();
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(model.Parameters))
                     connectionString += $"{model.Parameters}";
@@ -46,13 +56,24 @@ namespace SQLBackdoor.Controllers
                     IEnumerable<dynamic> result = null;
                     while(!ds.IsConsumed)
                     {
-                        result = await ds.ReadAsync();
-                        var (cols,data) = ReadColumns(result);
-                        response.Results.Add(new ExecutionResponseResult
+                        try
                         {
-                            Columns = cols,
-                            Data = data
-                        });
+                            result = await ds.ReadAsync();
+                            var (cols, data) = ReadColumns(result);
+                            response.Results.Add(new ExecutionResponseResult
+                            {
+                                Columns = cols,
+                                Data = data
+                            });
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            var data = ds.ReadFirstOrDefault();
+                            response.Results.Add(new ExecutionResponseResult
+                            {
+                                Data = new List<dynamic>()
+                            });
+                        }                        
                     }                  
                         
 
@@ -117,6 +138,7 @@ namespace SQLBackdoor.Controllers
 
     public class QueryData
     {
+        public IFormFile File { get; set; }
         public string Server { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }

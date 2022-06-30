@@ -83,6 +83,14 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="card-body border-bottom">
+                                <form id="fileUpload">
+                                    <div class="mb-3">
+                                        <label for="formFileSm" class="form-label">Executar do Arquivo</label>
+                                        <input class="form-control form-control-sm" id="file" name="file" type="file">
+                                    </div>
+                                </form>
+                            </div>
                             <textarea id="code" class=""></textarea>
                             <div class="card-footer">
                                 <button id="execute" class="btn btn-primary btn-sm">
@@ -196,38 +204,37 @@
                     return;
                 }
 
-                if (!$("#savequery").is(":checked")) 
-                {
-                    console.log('passou');
-                    fullContent = ''
+                var file = $("#file").val();
+
+                var formData;
+                if (file) {
+                    formData = new FormData($("#fileUpload").get(0));
+                } else {
+                    formData = new FormData();
+                    formData.append('Query', content);
                 }
 
-                var request = {
-                    "Server": $("#server").val(),
-                    "Username": $("#dbUser").val(),
-                    "Password": $("#dbPass").val(),
-                    "Database": $("#database").val(),
-                    "Parameters": $("#parameters").val(),
-                    "Timeout": $("#timeout").val() == '' ? null : $("#timeout").val(),                    
-                };
+                formData.append('Server', $("#server").val())
+                formData.append('Username', $("#dbUser").val())
+                formData.append('Password', $("#dbPass").val())
+                formData.append('Database', $("#database").val())
+                formData.append('Parameters', $("#parameters").val())
+                formData.append('Timeout', $("#timeout").val() == '' ? null : $("#timeout").val())
 
                 //localStorage.setItem($("#connectionName").val(), JSON.stringify(request));
-                localStorage.setItem("lastConnection", JSON.stringify(request));
-
-                request.Query = content
+                //localStorage.setItem("lastConnection", JSON.stringify(formData));
 
                 if ($("#savequery").is(":checked")) {
                     localStorage.setItem("lastQuery", fullContent);
                 }
-                
 
                 requestHandler = $.ajax(
                     {
                         url: urlSqlExecution,
-                        contentType: "application/json",
-                        dataType: 'json',
+                        contentType: false,
+                        processData: false,                        
                         method: 'POST',
-                        data: JSON.stringify(request),
+                        data: formData,
                         beforeSend: function() {
                             $("#data-result-placement").hide()
                                 .html('');
@@ -315,8 +322,6 @@
             };
 
             $.each(response.results, function(i, data) {
-
-
                 var card = $(`<div id="result-${i}"></div>`);
                 card.addClass("card p-0");
                 card.append('<div class="card-header">Resultados</div>')
@@ -326,7 +331,7 @@
                 container.addClass('overflow-auto')
                     .appendTo(card);
 
-                if (data.count <= 0) {
+                if (!data.data || data.data.count <= 0) {
                     $('<p class="text-center">Sem resultados</p>').appendTo(container);
                     return;
                 }
